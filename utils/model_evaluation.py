@@ -1,6 +1,5 @@
-from dis import dis
 import pandas as pd
-import torch
+
 
 class Evaluator:
     def __init__(self, dataset, info):
