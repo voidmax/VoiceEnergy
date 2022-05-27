@@ -8,22 +8,19 @@ class Evaluator:
         self.info = pd.read_csv(info)[["author", "raiting"]].groupby(["author"]).mean()
         self.raiting = self.info.groupby(["author"])
 
-    def evaluate(self, model):
+    def evaluate(self, predict):
         values = []
-        with torch.no_grad():
-            model.eval()
-            cache = dict()
-            for i in range(len(self.dataset)):
-                row = self.dataset.data.loc[i]
-                f = self.dataset[i]
-                if f[0] not in cache:
-                    cache[f[0]] = model(f[0]).item()
-                if f[1] not in cache:
-                    cache[f[1]] = model(f[1]).item()
-                v = [cache[f[0]], cache[f[1]]]
-                values.append([row["author_first"], v[0]])
-                values.append([row["author_second"], v[1]])
-            model.train()
+        cache = dict()
+        for i in range(len(self.dataset)):
+            row = self.dataset.data.loc[i]
+            f = self.dataset[i]
+            if f[0] not in cache:
+                cache[f[0]] = predict(f[0])
+            if f[1] not in cache:
+                cache[f[1]] = predict(f[1])
+            v = [cache[f[0]], cache[f[1]]]
+            values.append([row["author_first"], v[0]])
+            values.append([row["author_second"], v[1]])
         self.values = pd.DataFrame(values, columns=["author", "estimation"])
         self.values = self.values.groupby(["author"]).mean().reset_index()
         self.values = self.values.join(self.info, on="author", how="left")

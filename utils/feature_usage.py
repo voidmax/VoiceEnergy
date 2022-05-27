@@ -19,8 +19,7 @@ class FeatureExtractor:
                 self.feature_id[f] = len(self.features)
                 self.features.append(f)
 
-    def feature_extraction(self, idx, row, cache):
-        audio_key = (row[f"voice_{idx}"], row[f"L_{idx}"], row[f"R_{idx}"]) 
+    def feature_extraction(self, audio_key, cache):
         values = []
         row_cache = cache[audio_key]
         audio = None
@@ -100,7 +99,7 @@ class SoundDataset(Dataset):
             audio_key = (row[f"voice_{idx}"], row[f"L_{idx}"], row[f"R_{idx}"]) 
             if audio_key not in self._cache:
                 self._cache[audio_key] = self.feature_extraction(
-                    idx, row, self._feature_cache
+                    audio_key, self._feature_cache
                 )
             value.append(self._cache[audio_key])
         return tuple(value)
@@ -124,5 +123,3 @@ class SoundDataset(Dataset):
                 authors = bad_authors
 
         return gen()
-                
-
