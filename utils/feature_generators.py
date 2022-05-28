@@ -158,4 +158,12 @@ class LibrosaFeatureGenerator(FeatureGenerator):
             "librosa_chroma_cens_mean": np.mean(chroma_cens),
             "librosa_spec_bw_mean":     np.mean(spec_bw),
             "librosa_flatness_mean":    np.mean(flatness),
+            "librosa_mfccs_std":        np.std(feature_mfccs),
+            "librosa_rms_std":          np.std(feature_rms),
+            "librosa_chroma_std":       np.std(feature_chroma),
+            "librosa_centroid_std":     np.std(centroid),
+            "librosa_tonnetz_std":      np.std(tonnetz),
+            "librosa_chroma_cens_std":  np.std(chroma_cens),
+            "librosa_spec_bw_std":      np.std(spec_bw),
+            "librosa_flatness_std":     np.std(flatness),
         }

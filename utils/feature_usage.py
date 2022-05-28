@@ -27,7 +27,7 @@ class FeatureExtractor:
         for extractor, feature_names in self.feature_family:
             if sum(f in row_cache for f in feature_names) != len(feature_names):
                 if audio is None:
-                    audio = self.transform(self.get_audio(idx, row))
+                    audio = self.transform(self.get_audio(audio_key))
                 feature_values = extractor.feature_extraction(audio)
                 for key, value in feature_values.items():
                     row_cache[key] = value
