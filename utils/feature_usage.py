@@ -19,16 +19,16 @@ class FeatureExtractor:
                 self.feature_id[f] = len(self.features)
                 self.features.append(f)
 
-    def feature_extraction(self, audio_key, cache):
+    def feature_extraction(self, audio_key, cache=None):
         values = []
-        row_cache = cache[audio_key]
+        row_cache = cache[audio_key] if cache is not None else defaultdict(list)
         audio = None
 
         for extractor, feature_names in self.feature_family:
             if sum(f in row_cache for f in feature_names) != len(feature_names):
                 if audio is None:
                     audio = self.transform(self.get_audio(audio_key))
-                feature_values = extractor.feature_extraction(audio)
+                feature_values = extractor.feature_extraction(audio, audio_key)
                 for key, value in feature_values.items():
                     row_cache[key] = value
                 for f in feature_names:
@@ -92,16 +92,19 @@ class SoundDataset(Dataset):
             tmp = pd.DataFrame(data=data_rows, columns=columns)
             tmp.to_csv(self.cache_path, index=False)
 
+    def get_value(self, audio_key):
+        if audio_key not in self._cache:
+            self._cache[audio_key] = self.feature_extraction(
+                audio_key, self._feature_cache
+            )
+        return self._cache[audio_key]
+
     def __getitem__(self, i):
         value = []
         row = self.data.loc[i]
         for idx in ["first", "second"]:
             audio_key = (row[f"voice_{idx}"], row[f"L_{idx}"], row[f"R_{idx}"]) 
-            if audio_key not in self._cache:
-                self._cache[audio_key] = self.feature_extraction(
-                    audio_key, self._feature_cache
-                )
-            value.append(self._cache[audio_key])
+            value.append(self.get_value(audio_key))
         return tuple(value)
 
     def generator(self):

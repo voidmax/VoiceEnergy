@@ -4,30 +4,26 @@ import pandas as pd
 class Evaluator:
     def __init__(self, dataset, info):
         self.dataset = dataset
-        self.info = pd.read_csv(info)[["author", "raiting"]].groupby(["author"]).mean()
-        self.raiting = self.info.groupby(["author"])
+        self.info = info
+        self.info_mean = self.info[["author", "rating"]].groupby(["author"]).mean()
+        self.rating = self.info.groupby(["author"])
 
     def evaluate(self, predict):
         values = []
         cache = dict()
-        for i in range(len(self.dataset)):
-            row = self.dataset.data.loc[i]
-            f = self.dataset[i]
-            if f[0] not in cache:
-                cache[f[0]] = predict(f[0])
-            if f[1] not in cache:
-                cache[f[1]] = predict(f[1])
-            v = [cache[f[0]], cache[f[1]]]
-            values.append([row["author_first"], v[0]])
-            values.append([row["author_second"], v[1]])
+        for idx, row in self.info.iterrows():
+            f = (row["voice"], row["L"], row["R"])
+            if f not in cache:
+                cache[f] = predict(self.dataset.get_value(f))
+            values.append([row["author"], cache[f]])
         self.values = pd.DataFrame(values, columns=["author", "estimation"])
         self.values = self.values.groupby(["author"]).mean().reset_index()
-        self.values = self.values.join(self.info, on="author", how="left")
+        self.values = self.values.join(self.info_mean, on="author", how="left")
 
     def kendall_coefficients(self):
         discordant = 0
 
-        rank = self.values["raiting"]
+        rank = self.values["rating"]
         estimation = self.values["estimation"]
         for i in range(len(rank)):
             for j in range(i):
